@@ -12,12 +12,15 @@ import config_secret
 import tweepy
 import praw
 from imguralbum import ImgurAlbumDownloader
-from os import path
+from os import path, listdir
 from sys import argv
+
+class SubmissionInstance:
+    def __init__(self):
+        self.
 
 
 class BotInstance:
-
     def __init__(self):
         self.redditinstance = self.reddit_authenticate()
         self.twitterinstance = self.twitter_authenticate()
@@ -44,10 +47,10 @@ class BotInstance:
         print('Successfully Authenticated Twitter...')
         return api
 
-    @staticmethod
-    def download_imgur_album(album_url, album_id):
+    def download_imgur_album(self, album_url, album_id, title):
         downloader = ImgurAlbumDownloader(album_url)
         downloader.save_images(path.os.path.dirname(path.realpath(argv[0])) + '/Downloaded Albums/' + album_id)
+        self.tweet_image('None', album_id, title)
 
     def parse_new_submissions(self):
         subreddit = self.redditinstance.subreddit('battlestations')
@@ -57,10 +60,24 @@ class BotInstance:
             album_type = submission.url.split('/')[3]
             if album_type == 'a':
                 album_id = submission.url.split('/')[4]
-                self.download_imgur_album(submission.url, album_id)
+                self.download_imgur_album(submission.url, album_id, submission.title)
             elif album_type == 'gallery':
                 album_id = submission.url.split('/')[4]
-                self.download_imgur_album(submission.url, album_id)
+                self.download_imgur_album(submission.url, album_id, submission.title)
+
+    def tweet_image(self, message, album_id, title):
+        api = self.twitterinstance
+        api.update_with_media(self.get_image_path(album_id), status=title)
+
+    @staticmethod
+    def get_image_path(album_id):
+        base_path = path.os.path.dirname(path.realpath(argv[0])) + '/Downloaded Albums/' + album_id + '/'
+        file_list = listdir(base_path)
+        image_name = file_list[0]
+        full_path = base_path + image_name
+        print(full_path)
+        return full_path
+
 
 botinstance = BotInstance()
 botinstance.parse_new_submissions()
