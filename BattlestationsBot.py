@@ -12,6 +12,8 @@ import config_secret
 import tweepy
 import praw
 from imguralbum import ImgurAlbumDownloader
+from os import path
+from sys import argv
 
 
 class BotInstance:
@@ -43,19 +45,22 @@ class BotInstance:
         return api
 
     @staticmethod
-    def download_imgur_album(album_url):
+    def download_imgur_album(album_url, album_id):
         downloader = ImgurAlbumDownloader(album_url)
-        downloader.save_images()
+        downloader.save_images(path.os.path.dirname(path.realpath(argv[0])) + '/Downloaded Albums/' + album_id)
 
     def parse_new_submissions(self):
         subreddit = self.redditinstance.subreddit('battlestations')
         for submission in subreddit.hot(limit=10):
             print(submission.title)
             print(submission.url)
-            if submission.url.split('/')[3] == 'a':
-                self.download_imgur_album(submission.url)
-            elif submission.url.split('/')[3] == 'gallery':
-                self.download_imgur_album(submission.url)
+            album_type = submission.url.split('/')[3]
+            if album_type == 'a':
+                album_id = submission.url.split('/')[4]
+                self.download_imgur_album(submission.url, album_id)
+            elif album_type == 'gallery':
+                album_id = submission.url.split('/')[4]
+                self.download_imgur_album(submission.url, album_id)
 
 botinstance = BotInstance()
 botinstance.parse_new_submissions()
