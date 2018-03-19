@@ -2,3 +2,5 @@ config_secret.py
 .idea/
 __pycache__/
 Downloaded Albums/
+testing.py
+already_parsed.txt
